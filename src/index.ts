@@ -3,7 +3,7 @@ import { env } from "./config/env";
 import { resumeSchema } from "./validators/resume.validator";
 import { upload } from "./config/mutler";
 import { extractTextFromPDF } from "./utils/pdfParser";
-
+import { analyzeResume } from "./services/ai.service";
 
 const app = express();
 app.use(express.json());
@@ -12,17 +12,17 @@ app.post("/analyze", (req: Request, res: Response) => {
   const result = resumeSchema.safeParse(req.body);
 
   if (!result.success) {
-      return res.status(400).json({
-        error: result.error.flatten(),
-      });
-    }
-
-    const data = result.data;
-
-    return res.json({
-      message: "Validation successful ✅",
-      data,
+    return res.status(400).json({
+      error: result.error.flatten(),
     });
+  }
+
+  const data = result.data;
+
+  return res.json({
+    message: "Validation successful ✅",
+    data,
+  });
 });
 
 app.post(
@@ -30,8 +30,6 @@ app.post(
   upload.single("resume"),
   async (req: Request, res: Response) => {
     try {
-      console.log("FILE:", req.file);
-
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
       }
@@ -44,9 +42,11 @@ app.post(
 
       const text = await extractTextFromPDF(req.file.buffer);
 
+      const aiResponse = await analyzeResume(text);
+
       return res.json({
-        message: "Resume uploaded & parsed ✅",
-        preview: text.substring(0, 200),
+        message: "AI Analysis Complete ✅",
+        analysis: aiResponse,
       });
     } catch (error) {
       console.error("UPLOAD ERROR:", error);
@@ -54,7 +54,7 @@ app.post(
         error: "Error processing file",
       });
     }
-  }
+  },
 );
 
 app.listen(env.PORT, () => {
