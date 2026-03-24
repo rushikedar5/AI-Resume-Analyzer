@@ -1,4 +1,5 @@
 import express from "express";
+import { env } from "./config/env";
 
 const app = express();
 app.use(express.json());
@@ -7,8 +8,6 @@ app.get("/", (req, res) => {
     res.send("AI Resume Analyzer Running 🚀")
 }) 
 
-const PORT = 3000;
-
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+app.listen(env.PORT, () => {
+    console.log(`Server running on http://localhost:${env.PORT}`);
 })
