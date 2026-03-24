@@ -46,7 +46,7 @@ app.post(
 
       return res.json({
         message: "AI Analysis Complete ✅",
-        analysis: aiResponse,
+        analysis: aiResponse, 
       });
     } catch (error) {
       console.error("UPLOAD ERROR:", error);
